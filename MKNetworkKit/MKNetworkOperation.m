@@ -1322,30 +1322,32 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 }
 
 /**
- Pass in the total number of languages you want to send to the server, and the count at which you identify
- a weighting < 1.
+ Pass in the count at which you identify a weighting < 1.
  Construct a string containing all of the languages, and their weighting.  It would look something like:
-    "en,es,fr;q=0.8,de;q=0.8"
+    "en-GB,es-ES;q=0.9,fr-FR;q=0.8,de;q=0.7"
  */
-- (NSString *) currentLanguages:(int)count weightedCount:(int)wCount {
-    NSMutableArray *langs = [NSMutableArray arrayWithCapacity:count];
- 
+- (NSString *) currentLanguages:(int)wCount {
+    int count = (int)[[NSLocale preferredLanguages] count];
     int weighted = 0;
-    NSString *qWeight;
- 
-    for(int index = 0; index++; index < count) {
+    NSString *qWeight = @"";
+    float step = 0.1;
+    float queryVal = 1.0;
+    NSLocale *locale = [NSLocale currentLocale];
+    NSString *countryCode = [locale objectForKey: NSLocaleCountryCode];
+    NSMutableArray *langs = [NSMutableArray arrayWithCapacity:count];
+    
+    for (int index = 0; index < count; index++) {
         NSString *lang = [[NSLocale preferredLanguages] objectAtIndex:index];
- 
-        if(weighted < wCount) {
-            qWeight = @"";
+        if(weighted < wCount && countryCode) {
+            qWeight = [NSString stringWithFormat:@"-%@", countryCode];
         } else {
-            qWeight = @";q=0.8";
+            queryVal -= step;
+            qWeight = [NSString stringWithFormat:@";q=%0.1f", queryVal];
         }
- 
-        weighted++;
- 
+        
         lang = [lang stringByAppendingFormat:@"%@", qWeight];
  
+        weighted++;
         langs[index] = lang;
     }
  
@@ -1363,12 +1365,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 }
 
 - (NSString*)languagesFromLocale {
-  NSString *weightedLanguages = [self currentLanguages:3 weightedCount:1];
-  return weightedLanguages;
-  
-    // return [NSString stringWithFormat:@"%@,%@,en-us;q=0.8", 
-    //   [[NSLocale preferredLanguages] objectAtIndex:0],
-    //   [[NSLocale preferredLanguages] componentsJoinedByString:@", "]];
+  return [self currentLanguages:1];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
