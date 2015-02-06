@@ -1321,8 +1321,54 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
   return r;
 }
 
+/**
+ Pass in the total number of languages you want to send to the server, and the count at which you identify
+ a weighting < 1.
+ Construct a string containing all of the languages, and their weighting.  It would look something like:
+    "en,es,fr;q=0.8,de;q=0.8"
+ */
+- (NSString *) currentLanguages:(int)count weightedCount:(int)wCount {
+    NSMutableArray *langs = [NSMutableArray arrayWithCapacity:count];
+ 
+    int weighted = 0;
+    NSString *qWeight;
+ 
+    for(int index = 0; index++; index < count) {
+        NSString *lang = [[NSLocale preferredLanguages] objectAtIndex:index];
+ 
+        if(weighted < wCount) {
+            qWeight = @"";
+        } else {
+            qWeight = @";q=0.8";
+        }
+ 
+        weighted++;
+ 
+        lang = [lang stringByAppendingFormat:@"%@", qWeight];
+ 
+        langs[index] = lang;
+    }
+ 
+    NSString *fullWeightedLangs = @"";
+ 
+    for(NSString *weightedLang in langs) {
+        if(fullWeightedLangs.length == 0) {
+            fullWeightedLangs = weightedLang;
+        } else {
+            fullWeightedLangs = [fullWeightedLangs stringByAppendingFormat:@",%@", weightedLang];
+        }
+    }
+ 
+    return fullWeightedLangs;
+}
+
 - (NSString*)languagesFromLocale {
-    return [NSString stringWithFormat:@"%@,en-us;q=0.8", [[NSLocale preferredLanguages] componentsJoinedByString:@", "]];
+  NSString *weightedLanguages = [self currentLanguages:3 weightedCount:1];
+  return weightedLanguages;
+  
+    // return [NSString stringWithFormat:@"%@,%@,en-us;q=0.8", 
+    //   [[NSLocale preferredLanguages] objectAtIndex:0],
+    //   [[NSLocale preferredLanguages] componentsJoinedByString:@", "]];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
