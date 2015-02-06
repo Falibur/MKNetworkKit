@@ -1322,7 +1322,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 }
 
 - (NSString*)languagesFromLocale {
-    return [NSString stringWithFormat:@"%@, en-us", [[NSLocale preferredLanguages] componentsJoinedByString:@", "]];
+    return [NSString stringWithFormat:@"nl,en-us;q=0.8", [[NSLocale preferredLanguages] componentsJoinedByString:@", "]];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
